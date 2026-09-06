@@ -1,0 +1,165 @@
+'use client';
+
+import Image from 'next/image';
+import { Course } from '@/sharedTypes/course';
+import Link from 'next/link';
+import { addCourseToUser, removeCourseFromUser } from '@/services/api';
+import { useRouter } from 'next/navigation';
+
+interface CourseCardProps {
+  course: Course;
+  isProfileMode?: boolean; // Для переключения плюс/минус
+  progress?: number; // Для передачи процентов прогресса
+}
+
+export default function CourseCard({
+  course,
+  isProfileMode = false,
+  progress = 0,
+  onRemove,
+}: CourseCardProps & { onRemove?: (id: string) => void }) {
+  const router = useRouter();
+
+  return (
+    // Главный контейнер остается обычным div
+    <div className="bg-white rounded-[32px] shadow-sm border border-slate-100 flex flex-col hover:shadow-md transition-shadow w-[360px] h-auto pb-5 box-border relative overflow-hidden">
+      {/* Кнопка плюс/минус */}
+      <div
+        className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center z-20 cursor-pointer"
+        title={isProfileMode ? 'Удалить курс' : 'Добавить курс'}
+          onClick={async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      if (isProfileMode) {
+        // Если мы в профиле и нам передали функцию удаления сверху — вызываем её
+        if (onRemove) {
+          await onRemove(course._id);
+        }
+      } else {
+        // Логика добавления для главной страницы остаётся прежней
+        await addCourseToUser(course._id);
+      }
+    } catch (error) {
+      console.error('Ошибка:', error);
+    }
+  }}
+
+      >
+        {isProfileMode ? (
+          <Image
+            src="/icons/minus.svg"
+            alt="Удалить"
+            width={32}
+            height={32}
+            unoptimized
+          />
+        ) : (
+          <Image
+            src="/icons/plus.svg"
+            alt="Добавить"
+            width={32}
+            height={32}
+            unoptimized
+          />
+        )}
+      </div>
+
+      <Link
+        href={`/courses/${course._id}`}
+        className="no-underline text-black flex flex-col flex-grow"
+      >
+        {/* Блок картинки */}
+        <div
+          className={`${course.imageBg} w-full h-[325px] min-h-[325px] rounded-t-[32px] relative overflow-hidden flex items-center justify-center shrink-0`}
+        >
+          <Image
+            src={course.image}
+            alt={course.nameRU}
+            fill
+            sizes="(max-width: 768px) 100vw, 360px"
+            loading="eager" // Убирает варнинг про LCP для первых картинок
+            className="object-cover pointer-events-none"
+          />
+        </div>
+
+        {/* Текстовый блок */}
+        <div className="w-full px-5 pt-3 pb-5 flex flex-col justify-between flex-grow box-border">
+          <div className="flex flex-col gap-2.5">
+            <h3 className="text-[30px] font-bold leading-none tracking-tight text-black m-0 truncate">
+              {course.nameRU}
+            </h3>
+
+            <div className="flex flex-row flex-wrap gap-1.5 text-xs text-black font-normal w-[300px]">
+              <span className="bg-[#F5F5F5] h-[38px] px-3 py-1.5 rounded-full flex items-center gap-1.5 box-border">
+                <Image
+                  src="/icons/calendar.svg"
+                  alt=""
+                  width={16}
+                  height={16}
+                  unoptimized
+                />
+                {course.durationInDays} дней
+              </span>
+              <span className="bg-[#F5F5F5] h-[38px] px-3 py-1.5 rounded-full flex items-center gap-1.5 box-border">
+                <Image
+                  src="/icons/watch.svg"
+                  alt=""
+                  width={16}
+                  height={16}
+                  unoptimized
+                />
+                {course.dailyDurationInMinutes.from}-
+                {course.dailyDurationInMinutes.to} мин/день
+              </span>
+              <span
+                className="bg-[#F5F5F5] h-[38px] px-3 py-1.5 rounded-full flex items-center gap-1.5 box-border cursor-help"
+                title={`Уровень сложности: ${course.difficulty || 'начальный'}`}
+              >
+                <Image
+                  src="/icons/network.svg"
+                  alt=""
+                  width={16}
+                  height={16}
+                  unoptimized
+                  className="shrink-0"
+                />
+                Сложность
+              </span>
+            </div>
+          </div>
+
+          {/* Нижняя группа: Прогресс и Кнопка для профиля */}
+          {isProfileMode && (
+            <div className="flex flex-col w-full mt-auto pt-2">
+              <div className="flex flex-col gap-2 mb-4">
+                <div className="text-sm font-normal text-black font-sans leading-none pl-0.5">
+                  Прогресс {progress}%
+                </div>
+                <div className="w-full bg-[#F5F5F5] h-1.5 rounded-full overflow-hidden">
+                  <div
+                    className="bg-[#0071EE] h-full rounded-full transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                  ></div>
+                </div>
+              </div>
+              <button
+                className="w-full h-[46px] bg-[#BCEC30] hover:bg-[#C2FF1A] text-black font-semibold rounded-full transition-colors flex items-center justify-center text-sm cursor-pointer border-none font-sans"
+                onClick={(e) => {
+                  e.stopPropagation(); // Исключаем срабатывание ссылки при клике на внутреннюю кнопку страницы профиля
+                }}
+              >
+                {progress === 100
+                  ? 'Начать заново'
+                  : progress === 0
+                    ? 'Начать тренировки'
+                    : 'Продолжить'}
+              </button>
+            </div>
+          )}
+        </div>
+      </Link>
+    </div>
+  );
+}
