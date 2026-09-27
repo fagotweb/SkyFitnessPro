@@ -1,6 +1,6 @@
 # SkyFitnessPro — Онлайн-платформа тренировок
 
-Фронтенд-приложение для фитнеса, разработанное на **Next.js 16 (App Router)** и **TypeScript** с использованием **Tailwind CSS**.
+Фронтенд-приложение для фитнеса, разработанное на **Next.js (App Router)** и **TypeScript** с использованием **Tailwind CSS**.
 
 ## 🚀 Быстрый запуск
 
@@ -19,7 +19,7 @@ npm test
 
 ## 🌐 Демо
 
-[ссылка появится после деплоя]
+[https://sky-fitness-e7nk6tm6o-sky-acda.vercel.app/]
 
 ## 🛠️ Стек
 - Next.js 15 (App Router, Server Components, Server Actions)
