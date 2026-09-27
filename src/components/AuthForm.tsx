@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { loginUser, registerUser } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
+import { isEmailValid, isPasswordSecure } from '@/utils/validation';
 
 interface AuthFormProps {
   mode: 'login' | 'signup';
@@ -21,30 +22,16 @@ export default function AuthForm({ mode }: AuthFormProps) {
   const [password, setPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
 
-  // Стейт для хранения и вывода ошибок бэкенда (красный текст по макету)
+  // Стейт для хранения и вывода ошибок бэкенда
   const [errorMessage, setErrorMessage] = useState('');
 
-  // 1. Валидация Email (простая проверка на наличие собаки)
-  const isEmailValid = email.includes('@');
-
-  // 2. Валидация пароля по ТЗ из документации:
-  // - Не менее 6 символов
-  // - Не менее одной заглавной буквы
-  // - Не менее двух спецсимволов
-  const hasMinLength = password.length >= 6;
-  const hasUpperCase = /[A-Z]/.test(password);
-  const specialCharCount = (password.match(/[^A-Za-z0-9]/g) || []).length;
-  const hasSpecials = specialCharCount >= 2;
-
-  const isPasswordSecure = hasMinLength && hasUpperCase && hasSpecials;
+  const emailOk = isEmailValid(email);
+  const passwordOk = isPasswordSecure(password);
 
   // Кнопка заблокирована (Inactive), если поля пустые или пароль не проходит правила бэкенда (только для регистрации)
   const isButtonDisabled = isLoginMode
     ? !email.trim() || !password.trim()
-    : !email.trim() ||
-      !isEmailValid ||
-      !isPasswordSecure ||
-      !repeatPassword.trim();
+    : !email.trim() || !emailOk || !passwordOk || !repeatPassword.trim();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,7 +92,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
         onSubmit={handleSubmit}
         className="w-full flex flex-col gap-3 flex-grow justify-end mt-4"
       >
-        {/* Поле 1: Всегда Эл. почта по требованиям бэкенда */}
+        {/* Поле 1: Всегда Эл. почта */}
         <input
           type="email"
           placeholder="Эл. почта"
@@ -134,11 +121,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
           />
         )}
 
-        {/* 
-            КРАСНЫЙ ТЕКСТ ОШИБКИ:
-            - Появляется строго над кнопками, отцентрирован, размер мелкий, 
-              в точности как на вашем макете ошибок!
-          */}
+        {/*  КРАСНЫЙ ТЕКСТ ОШИБКИ: */}
         {errorMessage && (
           <div className="text-[#F5222D] text-xs font-normal text-center leading-tight px-2 mt-1 max-w-[280px] mx-auto whitespace-pre-line animate-fade-in">
             {errorMessage}
@@ -162,8 +145,8 @@ export default function AuthForm({ mode }: AuthFormProps) {
           {isLoginMode ? 'Зарегистрироваться' : 'Войти'}
         </Link>
 
-        {/* Крошечная интерактивная подсказка требований к паролю при регистрации */}
-        {!isLoginMode && !isPasswordSecure && password.length > 0 && (
+        {/* Интерактивная подсказка требований к паролю при регистрации */}
+        {!isLoginMode && !passwordOk && password.length > 0 && (
           <div className="text-[10px] text-slate-400 mt-1 text-center leading-none">
             Пароль требует: ≥6 симв., 1 заглавную, 2 спецсимвола (!@#$)
           </div>

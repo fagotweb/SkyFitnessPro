@@ -3,13 +3,15 @@
 import Image from 'next/image';
 import { Course } from '@/sharedTypes/course';
 import Link from 'next/link';
-import { addCourseToUser, removeCourseFromUser } from '@/services/api';
 import { useRouter } from 'next/navigation';
+import { addCourseAction } from '@/app/actions';
 
 interface CourseCardProps {
   course: Course;
   isProfileMode?: boolean; // Для переключения плюс/минус
   progress?: number; // Для передачи процентов прогресса
+  onRemove?: (id: string) => void;
+  onCardClick?: (course: Course) => void;
 }
 
 export default function CourseCard({
@@ -17,35 +19,46 @@ export default function CourseCard({
   isProfileMode = false,
   progress = 0,
   onRemove,
+  onCardClick,
 }: CourseCardProps & { onRemove?: (id: string) => void }) {
   const router = useRouter();
-
   return (
-    // Главный контейнер остается обычным div
     <div className="bg-white rounded-[32px] shadow-sm border border-slate-100 flex flex-col hover:shadow-md transition-shadow w-[360px] h-auto pb-5 box-border relative overflow-hidden">
       {/* Кнопка плюс/минус */}
       <div
         className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center z-20 cursor-pointer"
         title={isProfileMode ? 'Удалить курс' : 'Добавить курс'}
-          onClick={async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+        onClick={async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
 
-    try {
-      if (isProfileMode) {
-        // Если мы в профиле и нам передали функцию удаления сверху — вызываем её
-        if (onRemove) {
-          await onRemove(course._id);
-        }
-      } else {
-        // Логика добавления для главной страницы остаётся прежней
-        await addCourseToUser(course._id);
-      }
-    } catch (error) {
-      console.error('Ошибка:', error);
-    }
-  }}
+          if (isProfileMode) {
+            if (onRemove) await onRemove(course._id);
+            return;
+          }
 
+          const token = localStorage.getItem('token');
+          if (!token) {
+            router.push('/auth/signin');
+            return;
+          }
+
+          try {
+            if (isProfileMode) {
+              if (onRemove) await onRemove(course._id);
+            } else {
+              await addCourseAction(course._id, token);
+              router.refresh();
+            }
+          } catch (error) {
+            if (error instanceof Error && error.message === 'UNAUTHORIZED') {
+              localStorage.removeItem('token');
+              router.push('/auth/signin');
+              return;
+            }
+            console.error('Ошибка:', error);
+          }
+        }}
       >
         {isProfileMode ? (
           <Image
@@ -67,8 +80,19 @@ export default function CourseCard({
       </div>
 
       <Link
-        href={`/courses/${course._id}`}
-        className="no-underline text-black flex flex-col flex-grow"
+        href={isProfileMode ? '#' : `/courses/${course._id}`}
+        className="no-underline block relative"
+        onClick={(e) => {
+          if (isProfileMode) {
+            e.preventDefault(); // Отменяем переход по '#'
+
+            // Проверка: если кликнули именно по телу карточки, а не по кнопке минуса
+            const target = e.target as HTMLElement;
+            if (!target.closest('.absolute.top-4.right-4')) {
+              if (onCardClick) onCardClick(course); // Открываем модалку уроков
+            }
+          }
+        }}
       >
         {/* Блок картинки */}
         <div
@@ -144,10 +168,14 @@ export default function CourseCard({
                   ></div>
                 </div>
               </div>
+
               <button
                 className="w-full h-[46px] bg-[#BCEC30] hover:bg-[#C2FF1A] text-black font-semibold rounded-full transition-colors flex items-center justify-center text-sm cursor-pointer border-none font-sans"
                 onClick={(e) => {
-                  e.stopPropagation(); // Исключаем срабатывание ссылки при клике на внутреннюю кнопку страницы профиля
+                  e.stopPropagation(); // Исключаем переход по ссылке карточки
+                  if (onCardClick) {
+                    onCardClick(course); // Вызываем открытие модалки выбора уроков
+                  }
                 }}
               >
                 {progress === 100

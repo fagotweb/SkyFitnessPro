@@ -1,16 +1,21 @@
-import Header from '@/components/Header'; // Импортируем шапку напрямую
+import Header from '@/components/Header';
 import MainTopBlock from '@/components/MainTopBlock';
 import CourseCard from '@/components/CourseCard';
 import ScrollToTopButton from '@/components/ScrollToTopButton';
 import { getCourses } from '@/services/api';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Главная',
+};
 
 export default async function Home() {
-  const courses = await getCourses();   
-  
+  const courses = await getCourses();
+
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans antialiased text-black pb-12">
       <div className="max-w-[1160px] mx-auto px-4 md:px-6 py-6">
-        {/* 1. Глобальный Хедер — первый в разметке */}
+        {/* 1. Хедер */}
         <Header />
 
         <main>

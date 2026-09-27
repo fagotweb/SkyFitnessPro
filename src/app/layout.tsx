@@ -11,7 +11,10 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: 'SkyFitnessPro',
+  title: {
+    default: 'SkyFitnessPro — онлайн-тренировки',
+    template: '%s | SkyFitnessPro',
+  },
   description: 'Онлайн-тренировки для занятий дома',
 };
 

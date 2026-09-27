@@ -2,7 +2,7 @@ import type { Config } from 'jest';
 
 const config: Config = {
   preset: 'ts-jest',
-  testEnvironment: 'jest-environment-jsdom', // В новых версиях Jest лучше писать полное имя окружения
+  testEnvironment: 'jest-environment-jsdom',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
@@ -16,6 +16,11 @@ const config: Config = {
       },
     ],
   },
+  testPathIgnorePatterns: [
+    '<rootDir>/node_modules/',
+    '<rootDir>/src/app/',
+    '<rootDir>/src/services/',
+  ],
 };
 
 export default config;

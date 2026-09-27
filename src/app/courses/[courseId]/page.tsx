@@ -1,9 +1,10 @@
 import Image from 'next/image';
 import Header from '@/components/Header';
-// 1. Импортируем функцию запроса одного курса вместо getCourses
 import { getCourseById } from '@/services/api';
 import { notFound } from 'next/navigation';
 import { Course } from '@/sharedTypes/course';
+import { Metadata } from 'next';
+import AddCourseButton from '@/components/AddCourseButton';
 
 interface CoursePageProps {
   params: Promise<{
@@ -11,32 +12,41 @@ interface CoursePageProps {
   }>;
 }
 
-// 2. Делаем компонент асинхронным для работы с API
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ courseId: string }>;
+}): Promise<Metadata> {
+  try {
+    const { courseId } = await params;
+    const course = await getCourseById(courseId);
+    return { title: course.nameRU };
+  } catch {
+    return { title: 'Курс' };
+  }
+}
+
+// Делаем компонент асинхронным для работы с API
 export default async function CourseDetailPage({ params }: CoursePageProps) {
   const { courseId } = await params;
 
   let course: Course;
   try {
     course = await getCourseById(courseId);
-  } catch (error) {
+  } catch {
     notFound();
   }
 
-  // Типизируем аргументы функции: text — строка, index — число
+  // Типизируем аргументы функции
   const fittingItems = course.fitting.map((text: string, index: number) => ({
     num: String(index + 1),
-    text: text
+    text: text,
   }));
 
   const directionItems: string[] = course.directions;
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans antialiased text-black pb-16">
-      {/* ВРЕМЕННО ДОБАВЛЯЕМ ЭТУ СТРОКУ, ЧТОБЫ УВИДЕТЬ ДАННЫЕ С БЭКЕНДА */}
-    {/* <pre className="bg-black text-green-400 p-4 rounded text-xs overflow-auto max-w-full">
-      {JSON.stringify(course, null, 2)}
-    </pre> */}
-
       <div className="max-w-[1160px] mx-auto px-4 md:px-6 py-6">
         <Header />
 
@@ -51,37 +61,29 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
 
             <div className="absolute right-0 bottom-0 top-0 w-[300px] md:w-[440px] h-full">
               <Image
-                src={course.image} // Динамическая картинка курса вместо захардкоженной йоги
+                src={course.image}
                 alt={course.nameRU}
                 fill
-                priority // Промо-баннер — это LCP элемент, загружаем в приоритете
+                priority
                 className="object-contain object-right-bottom"
               />
             </div>
           </div>
 
-          {/* 2. Блок "Подойдет для вас, если:" с точными параметрами из инспектора Figma */}
+          {/* Блок "Подойдет для вас, если:" */}
           <div>
             <h3 className="text-[32px] md:text-[40px] font-bold tracking-tight mb-6">
               Подойдет для вас, если:
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {fittingItems.map((item: { num: string; text: string }) => (
-                /* Карточка: padding p-5 (20px),items-center для выравнивания с гигантской цифрой */
                 <div
                   key={item.num}
                   className="bg-[#202020] text-white p-5 rounded-[24px] min-h-[128px] flex items-center gap-6 box-border"
                 >
-                  {/* Зеленые цифры: строго Roboto, 75px, Medium (500) */}
                   <span className="font-['Roboto'] font-medium text-[75px] text-[#BCEC30] leading-none select-none shrink-0">
                     {item.num}
                   </span>
-
-                  {/* 
-                    Текстовый блок: 
-                    - строго w-[268px] и h-[78px] по инспектору Figma!
-                    - Шрифт text-[24px], leading-[110%], цвет белый.
-                  */}
                   <p className="font-['Roboto'] font-normal text-[24px] leading-[110%] text-white w-[268px] h-[78px] flex items-center tracking-tight">
                     {item.text}
                   </p>
@@ -90,7 +92,7 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
             </div>
           </div>
 
-          {/* 3. Блок "Направления" (исправленный чистый вывод) */}
+          {/* Блок "Направления" */}
           <div>
             <h3 className="text-[32px] md:text-[40px] font-bold tracking-tight mb-6">
               Направления
@@ -101,7 +103,6 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
                   key={index}
                   className="flex items-center gap-2.5 text-[18px] md:text-[20px] font-medium text-black"
                 >
-                  {/* Красивый аккуратный салатовый или черный плюсик без мусорных символов */}
                   <div className="w-[19.5px] h-[19.5px] relative shrink-0">
                     <Image
                       src="/icons/star.svg"
@@ -118,7 +119,7 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
             </div>
           </div>
 
-          {/* 4. Нижний промо-блок */}
+          {/* Нижний промо-блок */}
           <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm p-6 md:p-10 flex flex-col lg:flex-row justify-between items-center relative overflow-hidden min-h-[340px] mt-4">
             {/* Левая текстовая часть */}
             <div className="flex flex-col gap-6 max-w-[550px] relative z-10 w-full shrink-0">
@@ -133,14 +134,11 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
                 <li>упражнения заряжают бодростью</li>
                 <li>помогают противостоять стрессам</li>
               </ul>
-              <button className="bg-[#BCEC30] hover:bg-[#a6d423] text-black text-[16px] md:text-[18px] font-medium py-3.5 px-8 rounded-full transition-colors w-full md:w-max mt-2 cursor-pointer shadow-sm">
-                Войдите, чтобы добавить курс
-              </button>
+              <AddCourseButton courseId={course._id} />
             </div>
 
             {/* Графика справа */}
             <div className="w-full h-[340px] md:h-[400px] relative mt-8 lg:mt-0 lg:absolute lg:right-0 lg:bottom-0 lg:w-[520px] lg:h-[540px] pointer-events-none select-none overflow-visible z-0">
-              {/* 1. Большой зеленый сплайн на заднем плане (наклон 12.38 deg) */}
               <div className="absolute bottom-[-30px] right-[-60px] w-[670px] h-[390px] rotate-[12.38deg] z-0 opacity-100 origin-center">
                 <Image
                   src="/icons/spline_green.svg"
@@ -153,7 +151,7 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
                 />
               </div>
 
-              {/* 2. Маленькая звездочка */}
+              {/* Маленькая звездочка */}
               <div className="absolute top-[20px] left-[20px] md:top-[40px] md:left-[80px] w-[19.5px] h-[19.5px] z-10">
                 <Image
                   src="/icons/star.svg"
@@ -164,7 +162,7 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
                 />
               </div>
 
-              {/* 3. Маленький черный сплайн */}
+              {/* Маленький черный сплайн */}
               <div className="absolute top-[160px] left-[120px] w-[50px] h-[42.5px] z-20">
                 <Image
                   src="/icons/spline_black.svg"
@@ -175,7 +173,7 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
                 />
               </div>
 
-              {/* 4. Сам crouching_man на переднем переднем плане */}
+              {/* Сrouching_man на переднем плане */}
               <div className="absolute bottom-0 right-0 w-[519px] h-[539px] rotate-[-3deg] origin-bottom-right z-10">
                 <Image
                   src="/images/сrouching_man.png"

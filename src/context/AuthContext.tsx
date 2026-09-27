@@ -1,6 +1,5 @@
 'use client';
 
-import { getUserProfile } from '@/services/api';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface AuthContextType {
@@ -15,16 +14,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
-     useEffect(() => {
+  useEffect(() => {
     const token = localStorage.getItem('token');
     const savedEmail = localStorage.getItem('userEmail');
-    
+
     if (token && savedEmail) {
       setTimeout(() => {
         setUserEmail(savedEmail);
       }, 0);
     }
-  }, []); // СТРОГО ПУСТОЙ МАССИВ! Убираем отсюда userEmail
+  }, []);
 
   const login = (token: string, email: string) => {
     localStorage.setItem('token', token);
@@ -38,7 +37,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUserEmail(null);
   };
 
-
   return (
     <AuthContext.Provider
       value={{ userEmail, isAuthenticated: !!userEmail, login, logout }}
@@ -48,7 +46,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Кастомный хук для удобного использования в компонентах
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
