@@ -14,11 +14,11 @@ export default function SignInModalPage() {
   };
 
   return (
-    <div 
+    <div
       onClick={handleOverlayClick}
       className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200"
     >
-      {/* Контейнер теперь не имеет фиксированной высоты и плавно подстраивается под форму */}
+      {/* Контейнер не имеет фиксированной высоты и подстраивается под форму */}
       <div className="bg-white rounded-[32px] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
         <AuthForm mode="login" />
       </div>

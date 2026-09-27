@@ -9,3 +9,11 @@
   --breakpoint-lg: 1024px;
   --breakpoint-xl: 1280px;
 }
+
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #202020;
+  border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #BCEC30; }
