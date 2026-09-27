@@ -84,7 +84,7 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
                   <span className="font-['Roboto'] font-medium text-[75px] text-[#BCEC30] leading-none select-none shrink-0">
                     {item.num}
                   </span>
-                  <p className="font-['Roboto'] font-normal text-[24px] leading-[110%] text-white w-[268px] h-[78px] flex items-center tracking-tight">
+                  <p className="font-['Roboto'] font-normal text-[24px] leading-[110%] text-white tracking-tight">
                     {item.text}
                   </p>
                 </div>

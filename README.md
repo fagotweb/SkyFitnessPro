@@ -19,7 +19,7 @@ npm test
 
 ## 🌐 Демо
 
-[https://sky-fitness-e7nk6tm6o-sky-acda.vercel.app/]
+https://sky-fitness-pro-eight.vercel.app
 
 ## 🛠️ Стек
 - Next.js 15 (App Router, Server Components, Server Actions)
