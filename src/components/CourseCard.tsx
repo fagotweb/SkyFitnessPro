@@ -5,11 +5,14 @@ import { Course } from '@/sharedTypes/course';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { addCourseAction } from '@/app/actions';
+import { useState } from 'react';
 
 interface CourseCardProps {
   course: Course;
   isProfileMode?: boolean; // Для переключения плюс/минус
   progress?: number; // Для передачи процентов прогресса
+  isAlreadyAdded?: boolean;
+  onAdded?: (id: string) => void;
   onRemove?: (id: string) => void;
   onCardClick?: (course: Course) => void;
 }
@@ -18,19 +21,46 @@ export default function CourseCard({
   course,
   isProfileMode = false,
   progress = 0,
+  isAlreadyAdded = false,
+  onAdded,
   onRemove,
   onCardClick,
 }: CourseCardProps & { onRemove?: (id: string) => void }) {
   const router = useRouter();
+  const [isPending, setIsPending] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  const showNotice = (msg: string) => {
+    setNotice(msg);
+    setTimeout(() => setNotice(null), 2500);
+  };
   return (
     <div className="bg-white rounded-[32px] shadow-sm border border-slate-100 flex flex-col hover:shadow-md transition-shadow w-[360px] h-auto pb-5 box-border relative overflow-hidden">
+      {notice && (
+        <div
+          className="absolute top-14 right-4 z-30 bg-[#202020] text-white text-xs font-medium px-3 py-2 rounded-xl shadow-lg"
+          style={{ animation: 'fadeIn 0.2s ease-out' }}
+        >
+          {notice}
+        </div>
+      )}
       {/* Кнопка плюс/минус */}
       <div
-        className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center z-20 cursor-pointer"
+        className={`absolute top-4 right-4 w-8 h-8 flex items-center justify-center z-20 ${
+          isPending ? 'cursor-wait opacity-50' : 'cursor-pointer'
+        }`}
         title={isProfileMode ? 'Удалить курс' : 'Добавить курс'}
         onClick={async (e) => {
           e.preventDefault();
           e.stopPropagation();
+
+          if (isPending) return;
+
+          // Если курс уже добавлен — не делаем запрос
+          if (!isProfileMode && isAlreadyAdded) {
+            showNotice('Курс уже в вашем профиле');
+            return;
+          }
 
           if (isProfileMode) {
             if (onRemove) await onRemove(course._id);
@@ -43,20 +73,28 @@ export default function CourseCard({
             return;
           }
 
+          setIsPending(true);
           try {
-            if (isProfileMode) {
-              if (onRemove) await onRemove(course._id);
-            } else {
-              await addCourseAction(course._id, token);
-              router.refresh();
-            }
+            await addCourseAction(course._id, token);
+            showNotice('Курс добавлен');
+            onAdded?.(course._id);
+            router.refresh();
           } catch (error) {
             if (error instanceof Error && error.message === 'UNAUTHORIZED') {
               localStorage.removeItem('token');
               router.push('/auth/signin');
               return;
             }
+            const msg =
+              error instanceof Error ? error.message.toLowerCase() : '';
+            if (msg.includes('уже')) {
+              showNotice('Курс уже в вашем профиле');
+              return;
+            }
             console.error('Ошибка:', error);
+            showNotice('Не удалось добавить курс');
+          } finally {
+            setIsPending(false);
           }
         }}
       >

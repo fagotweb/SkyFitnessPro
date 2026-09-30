@@ -1,9 +1,9 @@
 import Header from '@/components/Header';
 import MainTopBlock from '@/components/MainTopBlock';
-import CourseCard from '@/components/CourseCard';
 import ScrollToTopButton from '@/components/ScrollToTopButton';
 import { getCourses } from '@/services/api';
 import type { Metadata } from 'next';
+import CoursesList from '@/components/CoursesList';
 
 export const metadata: Metadata = {
   title: 'Главная',
@@ -23,11 +23,7 @@ export default async function Home() {
           <MainTopBlock />
 
           {/* 3. Сетка карточек */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center md:justify-items-start">
-            {courses.map((course) => (
-              <CourseCard key={course._id} course={course} />
-            ))}
-          </div>
+          <CoursesList courses={courses} />
 
           {/* 4. Кнопка возврата наверх */}
           <ScrollToTopButton />

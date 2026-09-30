@@ -109,11 +109,11 @@ export async function getCourseById(courseId: string): Promise<Course> {
   });
 
   const visualMap: Record<string, { imageBg: string; image: string }> = {
-    йога: { imageBg: 'bg-[#FFC900]', image: '/images/yoga.png' },
-    стретчинг: { imageBg: 'bg-[#1890FF]', image: '/images/stretching.png' },
-    фитнес: { imageBg: 'bg-[#FF9900]', image: '/images/fitness.png' },
-    'степ-аэробика': { imageBg: 'bg-[#F5222D]', image: '/images/step.png' },
-    бодифлекс: { imageBg: 'bg-[#722ED1]', image: '/images/bodyflex.png' },
+    йога: { imageBg: 'bg-[#FFC700]', image: '/images/yoga.png' },
+    стретчинг: { imageBg: 'bg-[#2491D2]', image: '/images/stretching.png' },
+    фитнес: { imageBg: 'bg-[#F7A012]', image: '/images/fitness.png' },
+    'степ-аэробика': { imageBg: 'bg-[#FF7E65]', image: '/images/step.png' },
+    бодифлекс: { imageBg: 'bg-[#7D458C]', image: '/images/bodyflex.png' },
   };
 
   const key = (course.nameRU || '').toLowerCase().trim();
