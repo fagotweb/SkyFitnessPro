@@ -47,7 +47,7 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans antialiased text-black pb-16">
-      <div className="max-w-[1160px] mx-auto px-4 md:px-6 py-6">
+      <div className="max-w-[1160px] mx-auto px-4 md:px-6 py-6 overflow-hidden">
         <Header />
 
         <main className="mt-6 flex flex-col gap-12">
